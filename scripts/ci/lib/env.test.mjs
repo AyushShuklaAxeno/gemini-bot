@@ -76,3 +76,22 @@ test('throws EnvError for an invalid CI_PROVIDER', () => {
   const env = { ...baseGithubEnv, CI_PROVIDER: 'gitlab' };
   assert.throws(() => loadConfig(env), /CI_PROVIDER/);
 });
+
+test('github: falls back to the PR event file when CI_* vars are not set', () => {
+  const env = { ...baseGithubEnv, GITHUB_EVENT_PATH: '/github/workflow/event.json' };
+  delete env.CI_PR_NUMBER;
+  delete env.CI_BASE_SHA;
+  delete env.CI_HEAD_SHA;
+  const readFileFn = () =>
+    JSON.stringify({ pull_request: { number: 7, base: { sha: 'b1' }, head: { sha: 'h1' } } });
+  const config = loadConfig(env, { readFileFn });
+  assert.equal(config.github.prNumber, '7');
+  assert.equal(config.base, 'b1');
+  assert.equal(config.head, 'h1');
+});
+
+test('github: still errors clearly when neither CI_* vars nor an event file exist', () => {
+  const env = { ...baseGithubEnv };
+  delete env.CI_PR_NUMBER;
+  assert.throws(() => loadConfig(env), /CI_PR_NUMBER/);
+});

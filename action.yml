@@ -8,6 +8,10 @@ inputs:
     description: 'Gemini model name'
     required: false
     default: 'gemini-2.5-flash'
+  github-token:
+    description: 'Token used to post review comments'
+    required: false
+    default: ${{ github.token }}
   custom-rules-path:
     description: 'Path to custom rules file in consumer repo'
     required: false
@@ -19,10 +23,5 @@ runs:
     CI_PROVIDER: 'github'
     GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
     GEMINI_MODEL: ${{ inputs.gemini-model }}
-    GITHUB_TOKEN: ${{ github.token }}
-    GITHUB_REPOSITORY: ${{ github.repository }}
-    GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-    CI_PR_NUMBER: ${{ github.event.pull_request.number }}
-    CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-    CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
     CUSTOM_RULES_FILE: ${{ inputs.custom-rules-path }}
