@@ -12,6 +12,8 @@ Do not flag:
 - Pure stylistic nits, trivial formatting, or subjective opinions.
 - Issues outside the diff.
 
+Be thorough. Examine EVERY changed file in the diff, including CI/workflow/config files (YAML, Dockerfiles, scripts), not only application code. If you see a plausible bug, security risk or convention violation on a changed line, report it as a finding on that exact line. Return [] only when the diff is genuinely clean.
+
 LINE NUMBERS:
 In the diff, every added or unchanged line is prefixed with `L<number>|`, which is its line number in the new version of the file. Removed lines have no number. Set `line` to that number and only comment on added (`+`) lines or lines shown in the diff. Use the file path exactly as it appears after `+++ b/`.
 

@@ -72,6 +72,7 @@ async function main() {
   // exact lines, and remember which lines are valid targets for inline comments.
   const { annotated, validLines } = annotateDiff(rawDiff);
 
+   console.log(`[review] diff covers ${validLines.size} file(s), ${rawDiff.length} bytes`);
   const { text: diff, truncated } = truncateText(annotated, MAX_DIFF_BYTES, {
     notice: `\n\n[... diff truncated at ${MAX_DIFF_BYTES} bytes; review may be incomplete ...]`,
   });
@@ -103,7 +104,9 @@ async function main() {
       apiKey: config.geminiApiKey,
       model: config.geminiModel,
     });
+     console.log(`[review] gemini response (${raw.length} chars): ${raw.slice(0, 1500)}`);
     findings = parseFindings(raw);
+    console.log(`[review] gemini returned ${findings.length} valid finding(s)`);
   } catch (err) {
     if (err instanceof GeminiApiError || err instanceof FindingsParseError) {
       console.error(`[review] ${err.message}`);
@@ -115,7 +118,10 @@ async function main() {
   // GitHub rejects the whole review if any comment targets a line outside the diff.
   const { kept, dropped } = filterFindingsToDiff(findings, validLines);
   if (dropped.length > 0) {
-    console.warn(`[review] dropped ${dropped.length} finding(s) pointing outside the diff`);
+        console.warn(
+      `[review] dropped ${dropped.length} finding(s) pointing outside the diff: ` +
+        dropped.map((f) => `${f.file}:${f.line}`).join(', '),
+    );
   }
   findings = kept;
 
