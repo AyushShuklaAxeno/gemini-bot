@@ -4,7 +4,7 @@ FROM node:20-slim
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 # Avoid "fatal: detected dubious ownership in repository" when running on mounted consumer repositories
-RUN git config --global --add safe.directory '*'
+RUN git config --system --add safe.directory '*'
 
 WORKDIR /app
 
