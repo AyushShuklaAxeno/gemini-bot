@@ -1,0 +1,28 @@
+name: 'Gemini Code Review Bot'
+description: 'AI code review with inline PR comments and custom rules support (Gemini)'
+inputs:
+  gemini-api-key:
+    description: 'Google Gemini API key'
+    required: true
+  gemini-model:
+    description: 'Gemini model name'
+    required: false
+    default: 'gemini-2.5-flash'
+  custom-rules-path:
+    description: 'Path to custom rules file in consumer repo'
+    required: false
+    default: 'customRules'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    CI_PROVIDER: 'github'
+    GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
+    GEMINI_MODEL: ${{ inputs.gemini-model }}
+    GITHUB_TOKEN: ${{ github.token }}
+    GITHUB_REPOSITORY: ${{ github.repository }}
+    GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+    CI_PR_NUMBER: ${{ github.event.pull_request.number }}
+    CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+    CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    CUSTOM_RULES_FILE: ${{ inputs.custom-rules-path }}

@@ -1,0 +1,19 @@
+{
+  "name": "ai-code-review-bot",
+  "version": "1.0.0",
+  "description": "Multi-platform AI code review bot for GitHub Actions and Bitbucket Pipelines",
+  "type": "module",
+  "main": "scripts/ci/review.mjs",
+  "scripts": {
+    "test": "node --test scripts/ci/lib/*.test.mjs",
+    "review": "node scripts/ci/review.mjs"
+  },
+  "keywords": [
+    "code-review",
+    "ai",
+    "gemini",
+    "github-actions",
+    "bitbucket-pipelines"
+  ],
+  "license": "MIT"
+}

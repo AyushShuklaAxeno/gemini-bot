@@ -1,0 +1,23 @@
+# Put this file in the REPO YOU WANT REVIEWED at .github/workflows/ai-review.yml
+name: AI Code Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write   # required to post inline review comments
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed for the base...head diff
+
+      - uses: YOUR_GITHUB_USER_OR_ORG/YOUR_NEW_REPO@v1
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          # gemini-model: gemini-2.5-flash        # optional
+          # custom-rules-path: customRules        # optional
