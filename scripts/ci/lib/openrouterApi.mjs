@@ -10,7 +10,6 @@ export const RECOMMENDED_MODELS = [
   'anthropic/claude-3.5-sonnet',
   'deepseek/deepseek-chat',
   'google/gemini-2.0-flash-001',
-  'meta-llama/llama-3.3-70b-instruct',
 ];
 
 /**
