@@ -2,7 +2,7 @@ export class FindingsParseError extends Error {}
 
 const VALID_SEVERITIES = new Set(['high', 'medium', 'low']);
 
-function extractJsonArray(raw) {
+function extractJson(raw) {
   let text = raw.trim();
 
   const fenceMatch = text.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
@@ -11,27 +11,64 @@ function extractJsonArray(raw) {
   try {
     return JSON.parse(text);
   } catch {
-    const start = text.indexOf('[');
-    const end = text.lastIndexOf(']');
-    if (start === -1 || end === -1 || end < start) {
-      throw new FindingsParseError(
-        `No JSON array found in Gemini output: ${raw.slice(0, 200)}`,
-      );
+    const arrStart = text.indexOf('[');
+    const arrEnd = text.lastIndexOf(']');
+    const objStart = text.indexOf('{');
+    const objEnd = text.lastIndexOf('}');
+
+    const tryArrayFirst = arrStart !== -1 && (objStart === -1 || arrStart < objStart);
+
+    if (tryArrayFirst) {
+      if (arrStart !== -1 && arrEnd > arrStart) {
+        try {
+          return JSON.parse(text.slice(arrStart, arrEnd + 1));
+        } catch {}
+      }
+      if (objStart !== -1 && objEnd > objStart) {
+        try {
+          return JSON.parse(text.slice(objStart, objEnd + 1));
+        } catch {}
+      }
+    } else {
+      if (objStart !== -1 && objEnd > objStart) {
+        try {
+          return JSON.parse(text.slice(objStart, objEnd + 1));
+        } catch {}
+      }
+      if (arrStart !== -1 && arrEnd > arrStart) {
+        try {
+          return JSON.parse(text.slice(arrStart, arrEnd + 1));
+        } catch {}
+      }
     }
-    return JSON.parse(text.slice(start, end + 1));
+
+    throw new FindingsParseError(
+      `No JSON found in model output: ${raw.slice(0, 200)}`,
+    );
   }
 }
 
 export function parseFindings(rawOutput, { maxFindings = 25 } = {}) {
   let parsed;
   try {
-    parsed = extractJsonArray(rawOutput);
+    parsed = extractJson(rawOutput);
   } catch (err) {
     if (err instanceof FindingsParseError) throw err;
     throw new FindingsParseError(`Could not parse findings JSON: ${err.message}`);
   }
+
   if (!Array.isArray(parsed)) {
-    throw new FindingsParseError('Findings JSON is not an array');
+    if (parsed && typeof parsed === 'object') {
+      const candidates = [parsed.findings, parsed.issues, parsed.reviews, parsed.comments];
+      const foundArray = candidates.find(Array.isArray) ?? Object.values(parsed).find(Array.isArray);
+      if (Array.isArray(foundArray)) {
+        parsed = foundArray;
+      } else {
+        throw new FindingsParseError('Findings JSON is not an array');
+      }
+    } else {
+      throw new FindingsParseError('Findings JSON is not an array');
+    }
   }
 
   const findings = [];

@@ -1,4 +1,4 @@
-// Gemini cannot reliably work out new-file line numbers from raw hunk headers,
+// LLMs cannot reliably work out new-file line numbers from raw hunk headers,
 // and GitHub rejects the WHOLE review (HTTP 422) if even one inline comment
 // points at a line that is not part of the diff. So we (1) prefix every
 // new-side line with its real line number before sending the diff to the

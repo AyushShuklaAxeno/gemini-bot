@@ -1,13 +1,18 @@
-name: 'Gemini Code Review Bot'
-description: 'AI code review with inline PR comments and custom rules support (Gemini)'
+name: 'Groq Code Review Bot'
+description: 'AI code review with inline PR comments and custom rules support (Groq)'
 inputs:
-  gemini-api-key:
-    description: 'Google Gemini API key'
-    required: true
-  gemini-model:
-    description: 'Gemini model name'
+  groq-api-key:
+    description: 'Groq API key'
     required: false
-    default: 'gemini-2.5-flash'
+    default: ''
+  gemini-api-key:
+    description: 'Legacy Gemini API key (deprecated, use groq-api-key)'
+    required: false
+    default: ''
+  groq-model:
+    description: 'Groq model name'
+    required: false
+    default: 'llama-3.3-70b-versatile'
   github-token:
     description: 'Token used to post review comments'
     required: false
@@ -21,7 +26,7 @@ runs:
   image: 'Dockerfile'
   env:
     CI_PROVIDER: 'github'
-    GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
-    GEMINI_MODEL: ${{ inputs.gemini-model }}
+    GROQ_API_KEY: ${{ inputs.groq-api-key || inputs.gemini-api-key }}
+    GROQ_MODEL: ${{ inputs.groq-model }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     CUSTOM_RULES_FILE: ${{ inputs.custom-rules-path }}

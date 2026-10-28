@@ -4,7 +4,7 @@ import { loadConfig, EnvError } from './env.mjs';
 
 const baseGithubEnv = {
   CI_PROVIDER: 'github',
-  GEMINI_API_KEY: 'gemini-key',
+  GROQ_API_KEY: 'groq-key',
   CI_BASE_SHA: 'base-sha',
   CI_HEAD_SHA: 'head-sha',
   GITHUB_TOKEN: 'gh-token',
@@ -15,7 +15,7 @@ const baseGithubEnv = {
 
 const baseBitbucketEnv = {
   CI_PROVIDER: 'bitbucket',
-  GEMINI_API_KEY: 'gemini-key',
+  GROQ_API_KEY: 'groq-key',
   CI_BASE_SHA: 'origin/develop',
   CI_HEAD_SHA: 'head-sha',
   BITBUCKET_ACCESS_TOKEN: 'bb-token',
@@ -27,8 +27,8 @@ const baseBitbucketEnv = {
 test('loads a valid github config', () => {
   const config = loadConfig(baseGithubEnv);
   assert.equal(config.provider, 'github');
-  assert.equal(config.geminiApiKey, 'gemini-key');
-  assert.equal(config.geminiModel, 'gemini-2.5-flash');
+  assert.equal(config.groqApiKey, 'groq-key');
+  assert.equal(config.groqModel, 'llama-3.3-70b-versatile');
   assert.equal(config.base, 'base-sha');
   assert.equal(config.head, 'head-sha');
   assert.deepEqual(config.github, {
@@ -50,12 +50,20 @@ test('loads a valid bitbucket config', () => {
   });
 });
 
+test('supports legacy GEMINI_API_KEY as fallback', () => {
+  const env = { ...baseGithubEnv };
+  delete env.GROQ_API_KEY;
+  env.GEMINI_API_KEY = 'legacy-key';
+  const config = loadConfig(env);
+  assert.equal(config.groqApiKey, 'legacy-key');
+});
+
 test('throws EnvError naming a missing shared var', () => {
   const env = { ...baseGithubEnv };
-  delete env.GEMINI_API_KEY;
+  delete env.GROQ_API_KEY;
   assert.throws(() => loadConfig(env), (err) => {
     assert.ok(err instanceof EnvError);
-    assert.match(err.message, /GEMINI_API_KEY/);
+    assert.match(err.message, /GROQ_API_KEY/);
     return true;
   });
 });

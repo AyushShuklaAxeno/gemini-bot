@@ -3,7 +3,7 @@
 //
 // Entry point invoked identically by the GitHub Actions workflow and the
 // Bitbucket Pipelines step. Never exits nonzero for a review-side problem
-// (bad env, empty diff, unparsable Gemini output, network error) — only a
+// (bad env, empty diff, unparsable Groq output, network error) — only a
 // genuine bug in this file itself should ever surface as a failing step,
 // and even that is caught below and swallowed so it can't block a merge.
 
@@ -17,7 +17,7 @@ import { truncateText } from './lib/truncate.mjs';
 import { getDiff } from './lib/git.mjs';
 import { extractInvariantsSection } from './lib/claudeMdExcerpt.mjs';
 import { buildPrompt } from './lib/prompt.mjs';
-import { runGemini, GeminiApiError } from './lib/geminiApi.mjs';
+import { runGroq, GroqApiError } from './lib/groqApi.mjs';
 import { annotateDiff, filterFindingsToDiff } from './lib/diffLines.mjs';
 import { parseFindings, FindingsParseError } from './lib/parseFindings.mjs';
 import { buildGithubReviewPayload } from './lib/githubPayload.mjs';
@@ -38,11 +38,9 @@ const CLAUDE_MD_PATH = path.join(REPO_ROOT, 'CLAUDE.md');
 // Keeps a single review run to roughly 15-20k input tokens for the diff itself.
 // See the comment in claudeMdExcerpt.mjs.
 const MAX_DIFF_BYTES = 40_000;
-// Comfortably covers the real "Critical backend invariants" section
-// (measured at 293,201 bytes) with room for growth, while still keeping
-// a hard ceiling as a safety net. Gemini's context window is large, but
-// free-tier keys have a tokens-per-minute limit; lower this if you hit 429s.
-const MAX_CLAUDE_MD_BYTES = 350_000;
+// Covers the project conventions excerpt with room for growth while maintaining
+// safety ceilings within typical rate limits.
+const MAX_CLAUDE_MD_BYTES = 100_000;
 
 async function main() {
   let config;
@@ -68,11 +66,11 @@ async function main() {
     return;
   }
 
-  // Prefix every new-side line with its real line number so Gemini can cite
+  // Prefix every new-side line with its real line number so the model can cite
   // exact lines, and remember which lines are valid targets for inline comments.
   const { annotated, validLines } = annotateDiff(rawDiff);
 
-   console.log(`[review] diff covers ${validLines.size} file(s), ${rawDiff.length} bytes`);
+  console.log(`[review] diff covers ${validLines.size} file(s), ${rawDiff.length} bytes`);
   const { text: diff, truncated } = truncateText(annotated, MAX_DIFF_BYTES, {
     notice: `\n\n[... diff truncated at ${MAX_DIFF_BYTES} bytes; review may be incomplete ...]`,
   });
@@ -100,15 +98,15 @@ async function main() {
 
   let findings;
   try {
-    const raw = await runGemini(prompt, {
-      apiKey: config.geminiApiKey,
-      model: config.geminiModel,
+    const raw = await runGroq(prompt, {
+      apiKey: config.groqApiKey,
+      model: config.groqModel,
     });
-     console.log(`[review] gemini response (${raw.length} chars): ${raw.slice(0, 1500)}`);
+    console.log(`[review] groq response (${raw.length} chars): ${raw.slice(0, 1500)}`);
     findings = parseFindings(raw);
-    console.log(`[review] gemini returned ${findings.length} valid finding(s)`);
+    console.log(`[review] groq returned ${findings.length} valid finding(s)`);
   } catch (err) {
-    if (err instanceof GeminiApiError || err instanceof FindingsParseError) {
+    if (err instanceof GroqApiError || err instanceof FindingsParseError) {
       console.error(`[review] ${err.message}`);
       return;
     }
@@ -118,7 +116,7 @@ async function main() {
   // GitHub rejects the whole review if any comment targets a line outside the diff.
   const { kept, dropped } = filterFindingsToDiff(findings, validLines);
   if (dropped.length > 0) {
-        console.warn(
+    console.warn(
       `[review] dropped ${dropped.length} finding(s) pointing outside the diff: ` +
         dropped.map((f) => `${f.file}:${f.line}`).join(', '),
     );

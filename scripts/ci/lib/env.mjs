@@ -36,10 +36,18 @@ export function loadConfig(rawEnv = process.env, { readFileFn = readFileSync } =
     throw new EnvError(`CI_PROVIDER must be "github" or "bitbucket", got: ${provider}`);
   }
 
+  const groqApiKey = env.GROQ_API_KEY || env.GEMINI_API_KEY;
+  if (!groqApiKey) throw new EnvError('Missing required env var: GROQ_API_KEY');
+
+  const groqModel = env.GROQ_MODEL || env.GEMINI_MODEL || 'llama-3.3-70b-versatile';
+
   const shared = {
     provider,
-    geminiApiKey: required(env, 'GEMINI_API_KEY'),
-    geminiModel: env.GEMINI_MODEL || 'gemini-2.5-flash',
+    groqApiKey,
+    groqModel,
+    // backwards-compatibility aliases
+    geminiApiKey: groqApiKey,
+    geminiModel: groqModel,
     base: required(env, 'CI_BASE_SHA'),
     head: required(env, 'CI_HEAD_SHA'),
   };

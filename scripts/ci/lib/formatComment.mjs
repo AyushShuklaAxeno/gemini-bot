@@ -3,7 +3,7 @@ const SEVERITY_EMOJI = { high: '🔴', medium: '🟠', low: '🟡' };
 export function formatCommentBody(finding, { commitSha }) {
   const emoji = SEVERITY_EMOJI[finding.severity] ?? '🟠';
   const lines = [
-    `${emoji} **${finding.severity.toUpperCase()}** — Gemini review @ \`${commitSha.slice(0, 7)}\``,
+    `${emoji} **${finding.severity.toUpperCase()}** — Groq review @ \`${commitSha.slice(0, 7)}\``,
     '',
     finding.summary,
   ];
@@ -16,7 +16,7 @@ export function formatCommentBody(finding, { commitSha }) {
 export function formatSummaryBody(findings, { commitSha }) {
   const shortSha = commitSha.slice(0, 7);
   if (findings.length === 0) {
-    return `Gemini reviewed this PR (commit \`${shortSha}\`) and found no issues to flag.`;
+    return `Groq reviewed this PR (commit \`${shortSha}\`) and found no issues to flag.`;
   }
-  return `Gemini reviewed this PR (commit \`${shortSha}\`) and left ${findings.length} inline comment(s).`;
+  return `Groq reviewed this PR (commit \`${shortSha}\`) and left ${findings.length} inline comment(s).`;
 }

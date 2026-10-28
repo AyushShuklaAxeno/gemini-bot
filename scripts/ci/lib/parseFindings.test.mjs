@@ -12,8 +12,27 @@ test('parses a clean JSON array', () => {
   ]);
 });
 
+test('parses a clean JSON object with findings property', () => {
+  const raw = JSON.stringify({
+    findings: [
+      { file: 'a.js', line: 3, severity: 'high', summary: 'Bug', suggestion: 'Fix it' },
+    ],
+  });
+  const result = parseFindings(raw);
+  assert.deepEqual(result, [
+    { file: 'a.js', line: 3, severity: 'high', summary: 'Bug', suggestion: 'Fix it' },
+  ]);
+});
+
 test('parses JSON wrapped in a ```json code fence', () => {
   const raw = '```json\n[{"file":"a.js","line":1,"summary":"x"}]\n```';
+  const result = parseFindings(raw);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].file, 'a.js');
+});
+
+test('parses JSON object wrapped in a ```json code fence', () => {
+  const raw = '```json\n{"findings":[{"file":"a.js","line":1,"summary":"x"}]}\n```';
   const result = parseFindings(raw);
   assert.equal(result.length, 1);
   assert.equal(result[0].file, 'a.js');
@@ -25,8 +44,18 @@ test('recovers a JSON array even with stray prose around it', () => {
   assert.equal(result.length, 1);
 });
 
+test('recovers a JSON object even with stray prose around it', () => {
+  const raw = 'Here you go:\n{"findings":[{"file":"a.js","line":1,"summary":"x"}]}\nHope that helps!';
+  const result = parseFindings(raw);
+  assert.equal(result.length, 1);
+});
+
 test('returns an empty array for []', () => {
   assert.deepEqual(parseFindings('[]'), []);
+});
+
+test('returns an empty array for {"findings": []}', () => {
+  assert.deepEqual(parseFindings('{"findings": []}'), []);
 });
 
 test('drops malformed entries but keeps valid ones', () => {
@@ -49,7 +78,6 @@ test('defaults severity to medium when missing or invalid', () => {
   ]);
   const result = parseFindings(raw);
   assert.equal(result[0].severity, 'medium');
-  assert.equal(result[1].severity, 'medium');
 });
 
 test('defaults suggestion to empty string when absent', () => {

@@ -18,6 +18,6 @@ jobs:
 
       - uses: YOUR_GITHUB_USER_OR_ORG/YOUR_NEW_REPO@v1
         with:
-          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
-          # gemini-model: gemini-2.5-flash        # optional
-          # custom-rules-path: customRules        # optional
+          groq-api-key: ${{ secrets.GROQ_API_KEY }}
+          # groq-model: llama-3.3-70b-versatile        # optional
+          # custom-rules-path: customRules             # optional

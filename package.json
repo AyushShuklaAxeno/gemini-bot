@@ -11,7 +11,7 @@
   "keywords": [
     "code-review",
     "ai",
-    "gemini",
+    "groq",
     "github-actions",
     "bitbucket-pipelines"
   ],
