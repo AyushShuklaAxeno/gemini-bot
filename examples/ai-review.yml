@@ -18,6 +18,6 @@ jobs:
 
       - uses: YOUR_GITHUB_USER_OR_ORG/YOUR_NEW_REPO@v1
         with:
-          groq-api-key: ${{ secrets.GROQ_API_KEY }}
-          # groq-model: llama-3.3-70b-versatile        # optional
-          # custom-rules-path: customRules             # optional
+          openrouter-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          # openrouter-model: anthropic/claude-3.5-sonnet   # optional (e.g. deepseek/deepseek-chat, google/gemini-2.0-flash-001)
+          # custom-rules-path: customRules                 # optional

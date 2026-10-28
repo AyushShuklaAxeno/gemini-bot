@@ -1,18 +1,22 @@
-name: 'Groq Code Review Bot'
-description: 'AI code review with inline PR comments and custom rules support (Groq)'
+name: 'AI Code Review Bot'
+description: 'AI code review with inline PR comments and custom rules support (OpenRouter)'
 inputs:
+  openrouter-api-key:
+    description: 'OpenRouter API key'
+    required: false
+    default: ''
+  openrouter-model:
+    description: 'OpenRouter model name'
+    required: false
+    default: 'anthropic/claude-3.5-sonnet'
   groq-api-key:
-    description: 'Groq API key'
+    description: 'Legacy Groq API key (deprecated, use openrouter-api-key)'
     required: false
     default: ''
   gemini-api-key:
-    description: 'Legacy Gemini API key (deprecated, use groq-api-key)'
+    description: 'Legacy Gemini API key (deprecated, use openrouter-api-key)'
     required: false
     default: ''
-  groq-model:
-    description: 'Groq model name'
-    required: false
-    default: 'llama-3.3-70b-versatile'
   github-token:
     description: 'Token used to post review comments'
     required: false
@@ -26,7 +30,7 @@ runs:
   image: 'Dockerfile'
   env:
     CI_PROVIDER: 'github'
-    GROQ_API_KEY: ${{ inputs.groq-api-key || inputs.gemini-api-key }}
-    GROQ_MODEL: ${{ inputs.groq-model }}
+    OPENROUTER_API_KEY: ${{ inputs.openrouter-api-key || inputs.groq-api-key || inputs.gemini-api-key }}
+    OPENROUTER_MODEL: ${{ inputs.openrouter-model }}
     GITHUB_TOKEN: ${{ inputs.github-token }}
     CUSTOM_RULES_FILE: ${{ inputs.custom-rules-path }}

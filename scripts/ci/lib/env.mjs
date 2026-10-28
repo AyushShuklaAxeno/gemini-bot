@@ -36,18 +36,21 @@ export function loadConfig(rawEnv = process.env, { readFileFn = readFileSync } =
     throw new EnvError(`CI_PROVIDER must be "github" or "bitbucket", got: ${provider}`);
   }
 
-  const groqApiKey = env.GROQ_API_KEY || env.GEMINI_API_KEY;
-  if (!groqApiKey) throw new EnvError('Missing required env var: GROQ_API_KEY');
+  const apiKey = env.OPENROUTER_API_KEY || env.GROQ_API_KEY || env.GEMINI_API_KEY;
+  if (!apiKey) throw new EnvError('Missing required env var: OPENROUTER_API_KEY');
 
-  const groqModel = env.GROQ_MODEL || env.GEMINI_MODEL || 'llama-3.3-70b-versatile';
+  const model =
+    env.OPENROUTER_MODEL || env.GROQ_MODEL || env.GEMINI_MODEL || 'anthropic/claude-3.5-sonnet';
 
   const shared = {
     provider,
-    groqApiKey,
-    groqModel,
+    openrouterApiKey: apiKey,
+    openrouterModel: model,
     // backwards-compatibility aliases
-    geminiApiKey: groqApiKey,
-    geminiModel: groqModel,
+    groqApiKey: apiKey,
+    groqModel: model,
+    geminiApiKey: apiKey,
+    geminiModel: model,
     base: required(env, 'CI_BASE_SHA'),
     head: required(env, 'CI_HEAD_SHA'),
   };

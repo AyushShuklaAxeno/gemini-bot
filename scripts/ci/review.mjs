@@ -3,7 +3,7 @@
 //
 // Entry point invoked identically by the GitHub Actions workflow and the
 // Bitbucket Pipelines step. Never exits nonzero for a review-side problem
-// (bad env, empty diff, unparsable Groq output, network error) — only a
+// (bad env, empty diff, unparsable model output, network error) — only a
 // genuine bug in this file itself should ever surface as a failing step,
 // and even that is caught below and swallowed so it can't block a merge.
 
@@ -17,7 +17,7 @@ import { truncateText } from './lib/truncate.mjs';
 import { getDiff } from './lib/git.mjs';
 import { extractInvariantsSection } from './lib/claudeMdExcerpt.mjs';
 import { buildPrompt } from './lib/prompt.mjs';
-import { runGroq, GroqApiError } from './lib/groqApi.mjs';
+import { runOpenRouter, OpenRouterApiError } from './lib/openrouterApi.mjs';
 import { annotateDiff, filterFindingsToDiff } from './lib/diffLines.mjs';
 import { parseFindings, FindingsParseError } from './lib/parseFindings.mjs';
 import { buildGithubReviewPayload } from './lib/githubPayload.mjs';
@@ -98,15 +98,15 @@ async function main() {
 
   let findings;
   try {
-    const raw = await runGroq(prompt, {
-      apiKey: config.groqApiKey,
-      model: config.groqModel,
+    const raw = await runOpenRouter(prompt, {
+      apiKey: config.openrouterApiKey,
+      model: config.openrouterModel,
     });
-    console.log(`[review] groq response (${raw.length} chars): ${raw.slice(0, 1500)}`);
+    console.log(`[review] OpenRouter response (${raw.length} chars): ${raw.slice(0, 1500)}`);
     findings = parseFindings(raw);
-    console.log(`[review] groq returned ${findings.length} valid finding(s)`);
+    console.log(`[review] OpenRouter returned ${findings.length} valid finding(s)`);
   } catch (err) {
-    if (err instanceof GroqApiError || err instanceof FindingsParseError) {
+    if (err instanceof OpenRouterApiError || err instanceof FindingsParseError) {
       console.error(`[review] ${err.message}`);
       return;
     }

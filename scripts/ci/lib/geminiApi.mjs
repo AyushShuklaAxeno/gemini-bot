@@ -1,2 +1,7 @@
-// Re-export from groqApi for backwards compatibility
-export { runGroq as runGemini, GroqApiError as GeminiApiError, runGroq, GroqApiError } from './groqApi.mjs';
+// Re-export from openrouterApi for backwards compatibility
+export {
+  runOpenRouter as runGemini,
+  OpenRouterApiError as GeminiApiError,
+  runOpenRouter,
+  OpenRouterApiError,
+} from './openrouterApi.mjs';
